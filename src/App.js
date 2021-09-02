@@ -1,5 +1,5 @@
 import React from 'react'
-import Card from "./components/card/Card";
+import Index from "./components/card";
 import Header from "./components/header/Header";
 import Drawer from "./components/drawer/Drawer";
 
@@ -42,10 +42,12 @@ function App() {
 
                 <div className='d-flex'>
 
-                    { arr.map((obj)=>(<Card
+                    { arr.map((obj)=>(
+                        <Index
                         title={obj.title}
                         price={obj.price}
                         imageUrl={obj.imageUrl}
+                        clickHandler={()=>console.log(obj)}
                     />
                     ))}
                 </div>
