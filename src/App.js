@@ -4,30 +4,27 @@ import {Route} from "react-router-dom";
 import Index from "./components/card";
 import Header from "./components/header/Header";
 import Drawer from "./components/drawer/Drawer";
-;
+import Home from "./pages/Home";
+import Favorite from "./pages/Favorite";
 
 function App() {
     const [shoes, setShoes] = useState([]);
     const [cartShoes, setCartShoes] = useState([]);
-    const [favorites, setFavorites] = useState([])
-    const [searchValue, setSearchValue] = useState('')
+    const [favorites, setFavorites] = useState([]);
+    const [searchValue, setSearchValue] = useState('');
     const [cartOpened, setCartOpened] = useState(false);
 
-    useEffect(()=>{
-        // fetch('https://61322bd7ab7b1e001799b3a2.mockapi.io/shoes')
-        //     .then((res) => {
-        //     return res.json()
-        // }).then((json)=> {
-        //     setShoes(json)
-        // })
-        axios.get('https://61322bd7ab7b1e001799b3a2.mockapi.io/shoes').then((res)=> {
+    useEffect(() => {
+        axios.get('https://61322bd7ab7b1e001799b3a2.mockapi.io/shoes').then((res) => {
             setShoes(res.data);
         })
-        axios.get('https://61322bd7ab7b1e001799b3a2.mockapi.io/cart').then((res)=> {
+        axios.get('https://61322bd7ab7b1e001799b3a2.mockapi.io/cart').then((res) => {
             setCartShoes(res.data);
         })
-    },[])
-
+        axios.get('https://61322bd7ab7b1e001799b3a2.mockapi.io/favorites').then((res) => {
+            setFavorites(res.data);
+        })
+    }, [])
 
     const onAddToCart = (items) => {
         setCartShoes(prev => [...prev, items]);
@@ -39,45 +36,43 @@ function App() {
         axios.delete(`https://61322bd7ab7b1e001799b3a2.mockapi.io/cart/${id}`)
     }
 
-    const onAddToFavorite = (items) => {
-        setFavorites(prev => [...prev, items]);
-        axios.post('https://61322bd7ab7b1e001799b3a2.mockapi.io/favorites', items)
+    const onAddToFavorite = async (items) => {
+        try{
+            if (favorites.find((favObj) => favObj.id === items.id)) {
+                axios.delete(`https://61322bd7ab7b1e001799b3a2.mockapi.io/favorites/${items.id}`)
+            } else {
+                const { data } = await axios.post('https://61322bd7ab7b1e001799b3a2.mockapi.io/favorites', items)
+                setFavorites(prev => [...prev, data]);
+            }
+        } catch (error) {
+            alert('Ой, что-то пошло не так с фаворитами :D')
+        }
     }
 
     const inputHandler = (e) => {
         setSearchValue(e.target.value)
     }
+
     return (
         <div className="wrapper clear">
-            {cartOpened && <Drawer shoes={cartShoes} onClose={()=>setCartOpened(false)} onRemove={onRemoveCart}/> }
-            <Header onCLickCart={()=>setCartOpened(true)} />
+            {cartOpened && <Drawer shoes={cartShoes} onClose={() => setCartOpened(false)} onRemove={onRemoveCart}/>}
+            <Header onCLickCart={() => setCartOpened(true)}/>
 
 
-            <div className='content p-40'>
-                <div className='d-flex align-center justify-between mb-40'>
-                    <h1>{searchValue ? `Поиск по запросу: "${searchValue}"` : 'Все кроссовки'}</h1>
-                    <div className='search-block d-flex'>
-                        <img src='./img/search.svg' alt='Search'/>
-                        {searchValue && <img onClick={()=> setSearchValue('')} className='clear cu-p' src="./img/btn-remove.svg" alt="Clear"/>} {/*кнопка отображается тогда когда мы вбиваем что-то в инпут*/}
-                        <input onChange={inputHandler} value={searchValue} placeholder='Поиск...' type="text"/>
-                    </div>
-                </div>
+            <Route path='/' exact>
+                <Home
+                    shoes={shoes}
+                    searchValue={searchValue}
+                    setSearchValue={setSearchValue}
+                    inputHandler={inputHandler}
+                    onAddToCart={onAddToCart}
+                    onAddToFavorite={onAddToFavorite}
+                />
+            </Route>
 
-                <div className='d-flex flex-wrap'>
-                    {shoes
-                        .filter((obj => obj.title.toLowerCase().includes(searchValue.toLowerCase()))) /*поиск по фильтру даже с нижним регистром*/
-                        .map((obj, index)=>(
-                        <Index
-                            key={index}
-                        title={obj.title}
-                        price={obj.price}
-                        imageUrl={obj.imageUrl}
-                        onFavorite={(items)=>onAddToFavorite(items)}
-                        onPlus={(items)=>onAddToCart(items)}
-                    />
-                    ))}
-                </div>
-            </div>
+            <Route path='/favorite' exact>
+                <Favorite shoes={favorites} onAddToFavorite={onAddToFavorite}/>
+            </Route>
         </div>
     );
 }
