@@ -108,7 +108,7 @@ function App() {
                 <Header onCLickCart={() => setCartOpened(true)}/>
 
 
-                <Route path='react-sneakers/' exact>
+                <Route path='' exact>
                     <Home
                         shoes={shoes}
                         cartShoes={cartShoes}
@@ -121,11 +121,11 @@ function App() {
                     />
                 </Route>
 
-                <Route path='react-sneakers/favorite' exact>
+                <Route path='favorite' exact>
                     <Favorite onAddToFavorite={onAddToFavorite}/>
                 </Route>
 
-                <Route path='react-sneakers/orders' exact>
+                <Route path='orders' exact>
                     <Orders />
                 </Route>
             </div>
